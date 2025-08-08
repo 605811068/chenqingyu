@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>下班倒计时</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: white;
+        }
+        
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .countdown {
+            font-size: 3em;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .message {
+            font-size: 1.2em;
+            margin-top: 20px;
+            opacity: 0.9;
+        }
+        
+        .finished {
+            color: #90EE90;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .current-time {
+            font-size: 1em;
+            margin-top: 15px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🕐 下班倒计时</h1>
+        <div class="message">尊敬的陈青钰女士，离您下班还有：</div>
+        <div id="countdown" class="countdown">--:--:--</div>
+        <div id="status" class="message">请提前做好下班准备，祝您下班愉快！</div>
+        <div class="current-time">当前时间：<span id="current-time">--:--:--</span></div>
+    </div>
+
+    <script>
+        function updateCountdown() {
+            const now = new Date();
+            const currentTime = now.toLocaleTimeString('zh-CN', { hour12: false });
+            document.getElementById('current-time').textContent = currentTime;
+            
+            // 检查是否为周末
+            const dayOfWeek = now.getDay();
+            
+            // 检查是否为法定节假日
+            const holidayInfo = getHolidayInfo(now);
+            if (holidayInfo.isHoliday) {
+                document.getElementById('countdown').textContent = holidayInfo.icon;
+                document.getElementById('countdown').classList.add('finished');
+                document.getElementById('status').innerHTML = `🎉 陈青钰女士，${holidayInfo.message}！`;
+                return;
+            }
+            
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                // 周末
+                document.getElementById('countdown').textContent = '🌞 周末愉快';
+                document.getElementById('countdown').classList.add('finished');
+                document.getElementById('status').innerHTML = '🎉 陈青钰女士，周末快乐！好好休息哦～';
+                return;
+            }
+            
+            // 设置下班时间为今天的17:30:00
+            const endTime = new Date();
+            endTime.setHours(17, 30, 0, 0);
+            
+            // 如果当前时间已经超过今天的下班时间，设置为明天的下班时间
+            if (now > endTime) {
+                endTime.setDate(endTime.getDate() + 1);
+            }
+            
+            const timeDiff = endTime - now;
+            
+            if (timeDiff <= 0) {
+                // 已经下班
+                document.getElementById('countdown').textContent = '00:00:00';
+                document.getElementById('countdown').classList.add('finished');
+                document.getElementById('status').innerHTML = '🎉 恭喜陈青钰女士，已到下班时间！可以愉快地结束今天的工作了！';
+                return;
+            }
+            
+            // 计算剩余时间（向上取整秒数，确保精确）
+            const totalSeconds = Math.ceil(timeDiff / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            // 格式化显示
+            const formattedTime = 
+                String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0');
+            
+            document.getElementById('countdown').textContent = formattedTime;
+            
+            // 移除完成状态的样式
+            document.getElementById('countdown').classList.remove('finished');
+        }
+        
+        // 判断是否为法定节假日
+        function getHolidayInfo(date) {
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            
+            // 2025年法定节假日安排
+            const holidays = {
+                // 元旦：1月1日
+                '1-1': { name: '元旦快乐', icon: '🎊 新年快乐' },
+                
+                // 春节：1月28日-2月3日（除夕到初六）
+                '1-28': { name: '春节快乐', icon: '🐍 新春快乐' },
+                '1-29': { name: '春节快乐', icon: '🐍 新春快乐' },
+                '1-30': { name: '春节快乐', icon: '🐍 新春快乐' },
+                '1-31': { name: '春节快乐', icon: '🐍 新春快乐' },
+                '2-1': { name: '春节快乐', icon: '🐍 新春快乐' },
+                '2-2': { name: '春节快乐', icon: '🐍 新春快乐' },
+                '2-3': { name: '春节快乐', icon: '🐍 新春快乐' },
+                
+                // 清明节：4月5日-4月7日
+                '4-5': { name: '清明节安康', icon: '🌸 清明安康' },
+                '4-6': { name: '清明节安康', icon: '🌸 清明安康' },
+                '4-7': { name: '清明节安康', icon: '🌸 清明安康' },
+                
+                // 劳动节：5月1日-5月5日
+                '5-1': { name: '劳动节快乐', icon: '🌺 劳动节快乐' },
+                '5-2': { name: '劳动节快乐', icon: '🌺 劳动节快乐' },
+                '5-3': { name: '劳动节快乐', icon: '🌺 劳动节快乐' },
+                '5-4': { name: '劳动节快乐', icon: '🌺 劳动节快乐' },
+                '5-5': { name: '劳动节快乐', icon: '🌺 劳动节快乐' },
+                
+                // 端午节：5月31日-6月2日
+                '5-31': { name: '端午节快乐', icon: '🎋 端午节快乐' },
+                '6-1': { name: '端午节快乐', icon: '🎋 端午节快乐' },
+                '6-2': { name: '端午节快乐', icon: '🎋 端午节快乐' },
+                
+                // 中秋国庆节：10月1日-10月8日
+                '10-1': { name: '国庆节快乐', icon: '🇨🇳 国庆节快乐' },
+                '10-2': { name: '国庆节快乐', icon: '🇨🇳 国庆节快乐' },
+                '10-3': { name: '国庆节快乐', icon: '🇨🇳 国庆节快乐' },
+                '10-4': { name: '国庆中秋快乐', icon: '🇨🇳🌕 国庆中秋快乐' },
+                '10-5': { name: '国庆中秋快乐', icon: '🇨🇳🌕 国庆中秋快乐' },
+                '10-6': { name: '国庆中秋快乐', icon: '🇨🇳🌕 国庆中秋快乐' },
+                '10-7': { name: '国庆中秋快乐', icon: '🇨🇳🌕 国庆中秋快乐' },
+                '10-8': { name: '国庆中秋快乐', icon: '🇨🇳🌕 国庆中秋快乐' }
+            };
+            
+            const key = `${month}-${day}`;
+            const holiday = holidays[key];
+            
+            if (holiday) {
+                return {
+                    isHoliday: true,
+                    message: holiday.name,
+                    icon: holiday.icon
+                };
+            }
+            
+            return { isHoliday: false };
+        }
+        
+        // 页面加载时立即更新一次
+        updateCountdown();
+        
+        // 每秒更新一次
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
