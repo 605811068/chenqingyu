@@ -103,10 +103,7 @@
             const endTime = new Date();
             endTime.setHours(17, 30, 0, 0);
             
-            // 如果当前时间已经超过今天的下班时间，设置为明天的下班时间
-            if (now > endTime) {
-                endTime.setDate(endTime.getDate() + 1);
-            }
+
             
             const timeDiff = endTime - now;
             
@@ -114,7 +111,7 @@
                 // 已经下班
                 document.getElementById('countdown').textContent = '00:00:00';
                 document.getElementById('countdown').classList.add('finished');
-                document.getElementById('status').innerHTML = '🎉 恭喜陈青钰女士，已到下班时间！可以愉快地结束今天的工作了！';
+                document.getElementById('status').innerHTML = '🎉 恭喜陈青钰女士，已到下班时间啦！可以愉快地结束今天的工作了！';
                 return;
             }
             
